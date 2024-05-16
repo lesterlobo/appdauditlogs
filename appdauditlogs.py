@@ -1,6 +1,7 @@
 import json
 import requests
 from time import strftime, localtime
+from datetime import datetime, timedelta
 import logging
 import logging.handlers as handlers
 
@@ -47,100 +48,34 @@ class Controller:
 # ControllerAuditHistory?startTime=<start-time>&endTime=<end-time>&include=<field>:<value>&exclude=<field>:<value>
 def get_audit_history(start_time, end_time, time_zone_id='', include='', exclude=''):
     audit_str = '/controller/ControllerAuditHistory?startTime={}&endTime={}'.format(start_time, end_time)
-    audit_resp = requests.get(mc.url + audit_str,
-                                auth=(mc.user_at_account_name, mc.pw))
-    audit_json = json.loads(audit_resp.content.decode('utf-8'))
-    counter = 0
-
-    for item in audit_json:
-        print(item)
-        logger.info(item)
+    try:
+        audit_resp = requests.get(mc.url + audit_str,
+                                    auth=(mc.user_at_account_name, mc.pw))
+        
+        if (audit_resp.ok):
+            audit_json = json.loads(audit_resp.content.decode('utf-8'))
+            for item in audit_json:
+                logger.info(item)
+            print("name=Custom Metrics|AuditLogs|Running,aggregator=OBSERVATION,value=1")
+        else:
+            print(audit_resp.content)
+            logger.error("Error getting Audit logs from controller")
+            print("name=Custom Metrics|AuditLogs|Running,aggregator=OBSERVATION,value=0")
+    except:
+        print("An error occurred connecting to the controller")
+        logger.error("Error getting Audit logs from controller")
+        print("name=Custom Metrics|AuditLogs|Running,aggregator=OBSERVATION,value=0")
 
 
 mc = Controller()
-#bus_app_dict = load_all_apps()
+last_hour_date_time = datetime.now() - timedelta(hours = time_interval_to_run_in_hours)
+ 
+start = "{}.000-0700".format(last_hour_date_time.strftime('%Y-%m-%dT%H:%M:%S'))
+end = "{}.000-0700".format(datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
 
-local_time = strftime("%Y-%m-%dT%H:%M:%S", localtime())
-current_local_hour = int(strftime("%H", localtime()))
-current_local_day_date = int(strftime("%d", localtime()))
 
-x_hours_before_current_local_time = str(current_local_hour - time_interval_to_run_in_hours)
-one_day_before_current_local_time = str(current_local_day_date - 1)
-
-if x_hours_before_current_local_time == "-1":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "23"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-2":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "22"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-3":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "21"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-4":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "20"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-5":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "19"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-6":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "18"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-7":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "17"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-8":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "16"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-9":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "15"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-10":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "14"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-11":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "13"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-12":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "12"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-13":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "11"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-14":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "10"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-15":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "09"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-16":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "08"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-17":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "07"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-18":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "06"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-19":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "05"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-20":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "04"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-21":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "03"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-22":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "02"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-23":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "01"),
-                                                           localtime()))
-elif x_hours_before_current_local_time == "-24":
-    one_hour_before_current_local_time_full = str(strftime("%Y-%m-{}T{}:%M:%S".format(one_day_before_current_local_time, "00"),
-                                                           localtime()))
-
-start = "{}.000-0700".format(one_hour_before_current_local_time_full)
-end = "{}.000-0700".format(local_time)
+start = "{}.000-0700".format(start)
+end = "{}.000-0700".format(end)
 
 get_audit_history(start, end)
+
